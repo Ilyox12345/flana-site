@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flana - Développeur Discord</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: #ffffff;
+            color: #1a1a1a;
+        }
+
+        .bubbles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -150px;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: rise 15s infinite ease-in;
+            box-shadow: 0 20px 60px rgba(30, 95, 255, 0.3);
+        }
+
+        .bubble:nth-child(1) {
+            width: 120px;
+            height: 120px;
+            left: 10%;
+            animation-duration: 12s;
+            animation-delay: 0s;
+        }
+
+        .bubble:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            left: 25%;
+            animation-duration: 15s;
+            animation-delay: 2s;
+        }
+
+        .bubble:nth-child(3) {
+            width: 160px;
+            height: 160px;
+            left: 50%;
+            animation-duration: 18s;
+            animation-delay: 4s;
+        }
+
+        .bubble:nth-child(4) {
+            width: 140px;
+            height: 140px;
+            left: 70%;
+            animation-duration: 14s;
+            animation-delay: 1s;
+        }
+
+        .bubble:nth-child(5) {
+            width: 180px;
+            height: 180px;
+            left: 85%;
+            animation-duration: 16s;
+            animation-delay: 3s;
+        }
+
+        .bubble:nth-child(6) {
+            width: 220px;
+            height: 220px;
+            left: 40%;
+            animation-duration: 20s;
+            animation-delay: 5s;
+        }
+
+        @keyframes rise {
+            0% {
+                bottom: -150px;
+                transform: translateX(0) scale(1);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translateX(100px) scale(1.1);
+                opacity: 0.4;
+            }
+            100% {
+                bottom: 110vh;
+                transform: translateX(-100px) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        nav .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-counter {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 30px rgba(30, 95, 255, 0.2);
+            z-index: 1000;
+            border: 2px solid #4A9EFF;
+        }
+
+        .view-counter-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+
+        .view-counter-number {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #1a1a1a;
+            font-weight: 600;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #4A9EFF;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 8rem 5% 4rem;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 900px;
+        }
+
+        .hero h1 {
+            font-size: 5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero .subtitle {
+            font-size: 1.8rem;
+            color: #555;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease 0.2s backwards;
+        }
+
+        .hero .description {
+            font-size: 1.2rem;
+            color: #777;
+            margin-bottom: 3rem;
+            animation: fadeInUp 1s ease 0.4s backwards;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            animation: fadeInUp 1s ease 0.6s backwards;
+        }
+
+        .btn {
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(30, 95, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(30, 95, 255, 0.4);
+        }
+
+        .btn-secondary {
+            border: 3px solid #4A9EFF;
+            color: #4A9EFF;
+            background: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4A9EFF;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .projects {
+            padding: 6rem 5%;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 4rem;
+        }
+
+        .projects-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            z-index: 0;
+        }
+
+        .project-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(30, 95, 255, 0.25);
+            border-color: #4A9EFF;
+        }
+
+        .project-card:hover::before {
+            opacity: 0.03;
+        }
+
+        .project-card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .project-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-card h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+
+        .project-tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-card p {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .skills {
+            padding: 6rem 5%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .skills-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .skill-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-10px);
+            border-color: #4A9EFF;
+            box-shadow: 0 10px 40px rgba(30, 95, 255, 0.2);
+        }
+
+        .skill-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .skill-card h4 {
+            font-size: 1.3rem;
+            color: #1a1a1a;
+        }
+
+        footer {
+            background: linear-gradient(135deg, #1E5FFF 0%, #4A9EFF 100%);
+            color: white;
+            padding: 3rem 5%;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        footer p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .game-section {
+            background: white;
+            padding: 4rem 5%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .game-area {
+            background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.08);
+            border: 3px solid #4A9EFF;
+            margin-bottom: 2rem;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #4A9EFF;
+        }
+
+        .click-button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4A9EFF 0%, #1E5FFF 100%);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 10px 40px rgba(30, 95, 255, 0.4);
+            margin: 2rem auto;
+            display: block;
+        }
+
+        .click-button:hover {
+            transform: scale(1.05);
+        }
+
+        .click-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 20px rgba(30, 95, 255, 0.6);
+        }
+
+        .click-button.playing {
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .leaderboard {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.08);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .leaderboard-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            color: #1a1a1a;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(30, 95, 255, 0.1);
+        }
+
+        .leaderboard-item.top-1 {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+        }
+
+        .leaderboard-rank {
+            font-size: 1.5rem;
+            font-weight: 900;
+            width: 40px;
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            text-align: left;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        .leaderboard-score {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: #4A9EFF;
+        }
+
+        .leaderboard-item.top-1 .leaderboard-score {
+            color: white;
+        }
+
+        .username-input {
+            padding: 1rem;
+            font-size: 1.1rem;
+            border: 2px solid #4A9EFF;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            .hero .subtitle {
+                font-size: 1.3rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .cta-buttons {
+                flex-direction: column;
+            }
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bubbles">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <nav>
+        <div class="container">
+            <div class="logo">FLANA</div>
+            <ul class="nav-links">
+                <li><a href="#projects">Projets</a></li>
+                <li><a href="#skills">Compétences</a></li>
+                <li><a href="#game">Mini-Jeu</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="view-counter">
+        <div class="view-counter-title">👁️ Vues totales</div>
+        <div class="view-counter-number" id="viewCount">...</div>
+    </div>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>FLANA</h1>
+            <p class="subtitle">Développeur Discord & Créateur</p>
+            <p class="description">Fondateur de BumpX.fr et Les Coins des Copains<br>Spécialisé dans les bots Discord et le développement innovant</p>
+            <div class="cta-buttons">
+                <a href="#projects" class="btn btn-primary">Découvrir mes projets</a>
+                <a href="#contact" class="btn btn-secondary">Me contacter</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="projects">
+    <h2 class="section-title">Mes Projets</h2>
+    <p class="section-subtitle">Des créations innovantes pour la communauté Discord</p>
+
+    <div class="projects-grid">
+
+        <!-- BumpX.fr -->
+        <a href="https://bumpx.fr" target="_blank" class="project-card" style="text-decoration: none; color: inherit;">
+            <div class="project-card-content">
+                <div class="project-icon">🚀</div>
+                <h3>BumpX.fr</h3>
+                <span class="project-tag">Bot Discord</span>
+                <p>Un bot Discord full bump performant qui révolutionne la promotion de serveurs Discord avec des fonctionnalités avancées et une interface intuitive.</p>
+            </div>
+        </a>
+
+        <!-- Les Coins des Copains -->
+        <a href="https://discord.gg/xxxxx" target="_blank" class="project-card" style="text-decoration: none; color: inherit;">
+            <div class="project-card-content">
+                <div class="project-icon">👥</div>
+                <h3>Les Coins des Copains</h3>
+                <span class="project-tag">Communauté</span>
+                <p>Une communauté chaleureuse et accueillante où les membres partagent leurs passions et créent des liens durables dans une ambiance conviviale.</p>
+            </div>
+        </a>
+
+        <!-- Développement Sur Mesure -->
+        <a href="#" target="_blank" class="project-card" style="text-decoration: none; color: inherit;">
+            <div class="project-card-content">
+                <div class="project-icon">⚡</div>
+                <h3>Développement Sur Mesure</h3>
+                <span class="project-tag">Services</span>
+                <p>Création de bots Discord personnalisés et de solutions innovantes adaptées aux besoins spécifiques de chaque communauté.</p>
+            </div>
+        </a>
+
+    </div>
+</section>
+
+
+    <section id="skills" class="skills">
+        <h2 class="section-title">Compétences</h2>
+        <p class="section-subtitle">Technologies et expertises</p>
+        <div class="skills-grid">
+            <div class="skill-card">
+                <div class="skill-icon">🤖</div>
+                <h4>Bots Discord</h4>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon">💻</div>
+                <h4>Développement</h4>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon">🎨</div>
+                <h4>Design UI/UX</h4>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon">⚙️</div>
+                <h4>Automatisation</h4>
+            </div>
+        </div>
+    </section>
+
+    <section id="game" class="game-section">
+        <div class="game-container">
+            <h2 class="game-title">⚡ Jeu de Rapidité</h2>
+            <p class="game-subtitle">Clique le plus rapidement possible en 10 secondes !</p>
+            
+            <div class="game-area">
+                <input type="text" id="username" class="username-input" placeholder="Entre ton pseudo..." maxlength="20">
+                
+                <div class="game-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Tes clics</div>
+                        <div class="stat-value" id="clickCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Temps restant</div>
+                        <div class="stat-value" id="timer">10s</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Ton meilleur</div>
+                        <div class="stat-value" id="personalBest">0</div>
+                    </div>
+                </div>
+
+                <button id="clickBtn" class="click-button">CLIQUER ICI!</button>
+            </div>
+
+            <div class="leaderboard">
+                <h3 class="leaderboard-title">🏆 Classement Mondial</h3>
+                <div id="leaderboardList">
+                    <div class="leaderboard-item">
+                        <span class="leaderboard-rank">...</span>
+                        <span class="leaderboard-name">Chargement...</span>
+                        <span class="leaderboard-score">...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <p>© 2025 Flana - Développeur Discord</p>
+        <p style="margin-top: 1rem; opacity: 0.8;">Transformons vos idées en réalité</p>
+    </footer>
+
+   <script>
+    const API_URL = "https://flana-api-off.ilyesquibroute93.workers.dev";
+
+    // ------------------------------
+    // COMPTEUR DE VUES API
+    // ------------------------------
+    async function initViewCounter() {
+        try {
+            const res = await fetch(`${API_URL}/views`);
+            const data = await res.json();
+            document.getElementById("viewCount").textContent = data.views.toLocaleString();
+        } catch (err) {
+            console.error("Erreur compteur :", err);
+            document.getElementById("viewCount").textContent = "---";
+        }
+    }
+
+    // ------------------------------
+    // MINI JEU
+    // ------------------------------
+    let clickCount = 0;
+    let timeLeft = 10;
+    let gameActive = false;
+    let gameInterval;
+    let personalBest = 0;
+
+    const clickBtn = document.getElementById("clickBtn");
+    const clickCountDisplay = document.getElementById("clickCount");
+    const timerDisplay = document.getElementById("timer");
+    const personalBestDisplay = document.getElementById("personalBest");
+    const usernameInput = document.getElementById("username");
+
+    // Charger le meilleur score perso via API
+    async function loadPersonalBest() {
+        const username = usernameInput.value.trim() || "Anonyme";
+        try {
+            const res = await fetch(`${API_URL}/leaderboard`);
+            const data = await res.json();
+
+            const scores = data.filter(p => p.username === username);
+            if (scores.length > 0) {
+                personalBest = Math.max(...scores.map(s => s.score));
+                personalBestDisplay.textContent = personalBest;
+            }
+        } catch {
+            console.log("Impossible de charger le meilleur score");
+        }
+    }
+
+    clickBtn.addEventListener("click", () => {
+        if (!gameActive) startGame();
+        else {
+            clickCount++;
+            clickCountDisplay.textContent = clickCount;
+
+            clickBtn.style.transform = "scale(0.9)";
+            setTimeout(() => clickBtn.style.transform = "scale(1)", 60);
+        }
+    });
+
+    function startGame() {
+        clickCount = 0;
+        timeLeft = 10;
+        gameActive = true;
+
+        clickCountDisplay.textContent = "0";
+        clickBtn.textContent = "CLIQUE !";
+        clickBtn.classList.add("playing");
+
+        gameInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft + "s";
+
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    async function endGame() {
+        clearInterval(gameInterval);
+        gameActive = false;
+        clickBtn.classList.remove("playing");
+        clickBtn.textContent = "REJOUER";
+        timerDisplay.textContent = "10s";
+
+        const username = usernameInput.value.trim() || "Anonyme";
+
+        // Envoyer le score à l'API
+        try {
+            const res = await fetch(`${API_URL}/score`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ username, score: clickCount })
+            });
+
+            const data = await res.json();
+            personalBest = data.bestScore;
+            personalBestDisplay.textContent = personalBest;
+
+        } catch (err) {
+            console.error("Erreur enregistrement score :", err);
+        }
+
+        loadLeaderboard();
+    }
+
+    // ------------------------------
+    // LEADERBOARD API
+    // ------------------------------
+    async function loadLeaderboard() {
+        try {
+            const res = await fetch(`${API_URL}/leaderboard`);
+            const scores = await res.json();
+
+            const leaderboardList = document.getElementById("leaderboardList");
+
+            if (scores.length === 0) {
+                leaderboardList.innerHTML = `
+                    <div class="leaderboard-item">
+                        <span class="leaderboard-rank">-</span>
+                        <span class="leaderboard-name">Aucun score</span>
+                        <span class="leaderboard-score">-</span>
+                    </div>
+                `;
+                return;
+            }
+
+            leaderboardList.innerHTML = scores.slice(0, 10).map((entry, index) => `
+                <div class="leaderboard-item ${index === 0 ? "top-1" : ""}">
+                    <span class="leaderboard-rank">
+                        ${index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index+1}
+                    </span>
+                    <span class="leaderboard-name">${entry.username}</span>
+                    <span class="leaderboard-score">${entry.score} clics</span>
+                </div>
+            `).join("");
+
+        } catch (err) {
+            console.error("Erreur leaderboard :", err);
+        }
+    }
+
+    // ------------------------------
+    // NAVIGATION + ANIMATIONS
+    // ------------------------------
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener("click", e => {
+            e.preventDefault();
+            const target = document.querySelector(a.getAttribute("href"));
+            if (target) target.scrollIntoView({ behavior: "smooth" });
+        });
+    });
+
+    const observerOptions = {threshold: 0.2, rootMargin: "0px 0px -100px 0px"};
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting)
+                entry.target.style.animation = "fadeInUp 0.8s ease forwards";
+        });
+    });
+
+    document.querySelectorAll(".project-card, .skill-card").forEach(card => observer.observe(card));
+
+    // ------------------------------
+    // INITIALISATION
+    // ------------------------------
+    window.addEventListener("load", () => {
+        initViewCounter();
+        loadLeaderboard();
+
+        setInterval(loadLeaderboard, 10000);
+    });
+</script>
+
+</body>
+</html>
