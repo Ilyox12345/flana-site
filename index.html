@@ -729,182 +729,181 @@
     </section>
 
     <section id="game" class="game-section">
-        <div class="game-container">
-            <h2 class="game-title">⚡ Jeu de Rapidité</h2>
-            <p class="game-subtitle">Clique le plus rapidement possible en 10 secondes !</p>
+    <div class="game-container">
+        <h2 class="game-title">⚡ Jeu de Rapidité</h2>
+        <p class="game-subtitle">Clique le plus rapidement possible en 10 secondes !</p>
+        
+        <div class="game-area">
+            <input type="text" id="username" class="username-input" placeholder="Entre ton pseudo..." maxlength="20">
             
-            <div class="game-area">
-                <input type="text" id="username" class="username-input" placeholder="Entre ton pseudo..." maxlength="20">
-                
-                <div class="game-stats">
-                    <div class="stat-box">
-                        <div class="stat-label">Tes clics</div>
-                        <div class="stat-value" id="clickCount">0</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Temps restant</div>
-                        <div class="stat-value" id="timer">10s</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Ton meilleur</div>
-                        <div class="stat-value" id="personalBest">0</div>
-                    </div>
+            <div class="game-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Tes clics</div>
+                    <div class="stat-value" id="clickCount">0</div>
                 </div>
-
-                <button id="clickBtn" class="click-button">CLIQUER ICI!</button>
+                <div class="stat-box">
+                    <div class="stat-label">Temps restant</div>
+                    <div class="stat-value" id="timer">10s</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Ton meilleur</div>
+                    <div class="stat-value" id="personalBest">0</div>
+                </div>
             </div>
 
-            <div class="leaderboard">
-                <h3 class="leaderboard-title">🏆 Classement Mondial</h3>
-                <div id="leaderboardList">
-                    <div class="leaderboard-item">
-                        <span class="leaderboard-rank">...</span>
-                        <span class="leaderboard-name">Chargement...</span>
-                        <span class="leaderboard-score">...</span>
-                    </div>
+            <button id="clickBtn" class="click-button">CLIQUER ICI!</button>
+        </div>
+
+        <div class="leaderboard">
+            <h3 class="leaderboard-title">🏆 Classement Mondial</h3>
+            <div id="leaderboardList">
+                <div class="leaderboard-item">
+                    <span class="leaderboard-rank">...</span>
+                    <span class="leaderboard-name">Chargement...</span>
+                    <span class="leaderboard-score">...</span>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
 
     <footer id="contact">
         <p>© 2025 Flana - Développeur Discord</p>
         <p style="margin-top: 1rem; opacity: 0.8;">Transformons vos idées en réalité</p>
     </footer>
-<script>
-    const API_URL = "https://flana-api-off.ilyesquibroute93.workers.dev";
 
-    // ------------------------------
-    // COMPTEUR DE VUES API
-    // ------------------------------
-    async function initViewCounter() {
-        try {
-            const res = await fetch(`${API_URL}/views`);
-            const data = await res.json();
-            document.getElementById("viewCount").textContent = data.views.toLocaleString();
-        } catch (err) {
-            console.error("Erreur compteur :", err);
-            document.getElementById("viewCount").textContent = "---";
-        }
+ <script>
+const API_URL = "https://flana-api-off.ilyesquibroute93.workers.dev";
+
+// ------------------------------
+// COMPTEUR DE VUES API
+// ------------------------------
+async function initViewCounter() {
+    try {
+        const res = await fetch(`${API_URL}/views`);
+        const data = await res.json();
+        document.getElementById("viewCount").textContent = data.views.toLocaleString();
+    } catch (err) {
+        console.error("Erreur compteur :", err);
+        document.getElementById("viewCount").textContent = "---";
+    }
+}
+
+// ------------------------------
+// MINI JEU
+// ------------------------------
+let clickCount = 0;
+let timeLeft = 10;
+let gameActive = false;
+let gameInterval;
+let personalBest = 0;
+
+const clickBtn = document.getElementById("clickBtn");
+const clickCountDisplay = document.getElementById("clickCount");
+const timerDisplay = document.getElementById("timer");
+const personalBestDisplay = document.getElementById("personalBest");
+const usernameInput = document.getElementById("username");
+
+clickBtn.addEventListener("click", () => {
+    if (!gameActive) startGame();
+    else {
+        clickCount++;
+        clickCountDisplay.textContent = clickCount;
+
+        clickBtn.style.transform = "scale(0.9)";
+        setTimeout(() => clickBtn.style.transform = "scale(1)", 60);
+    }
+});
+
+function startGame() {
+    clickCount = 0;
+    timeLeft = 10;
+    gameActive = true;
+
+    clickCountDisplay.textContent = "0";
+    clickBtn.textContent = "CLIQUE !";
+    clickBtn.classList.add("playing");
+
+    gameInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft + "s";
+
+        if (timeLeft <= 0) endGame();
+    }, 1000);
+}
+
+async function endGame() {
+    clearInterval(gameInterval);
+    gameActive = false;
+    clickBtn.classList.remove("playing");
+    clickBtn.textContent = "REJOUER";
+    timerDisplay.textContent = "10s";
+
+    const username = usernameInput.value.trim() || "Anonyme";
+
+    // Envoyer le score à l'API
+    try {
+        const res = await fetch(`${API_URL}/score`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ username, score: clickCount })
+        });
+
+        const data = await res.json();
+        personalBest = data.bestScore;
+        personalBestDisplay.textContent = personalBest;
+
+    } catch (err) {
+        console.error("Erreur enregistrement score :", err);
     }
 
-    // ------------------------------
-    // MINI JEU
-    // ------------------------------
-    let clickCount = 0;
-    let timeLeft = 10;
-    let gameActive = false;
-    let gameInterval;
-    let personalBest = 0;
+    loadLeaderboard();
+}
 
-    const clickBtn = document.getElementById("clickBtn");
-    const clickCountDisplay = document.getElementById("clickCount");
-    const timerDisplay = document.getElementById("timer");
-    const personalBestDisplay = document.getElementById("personalBest");
-    const usernameInput = document.getElementById("username");
+// ------------------------------
+// LEADERBOARD API
+// ------------------------------
+async function loadLeaderboard() {
+    try {
+        const res = await fetch(`${API_URL}/leaderboard`);
+        const scores = await res.json();
 
-    clickBtn.addEventListener("click", () => {
-        if (!gameActive) startGame();
-        else {
-            clickCount++;
-            clickCountDisplay.textContent = clickCount;
+        const leaderboardList = document.getElementById("leaderboardList");
 
-            clickBtn.style.transform = "scale(0.9)";
-            setTimeout(() => clickBtn.style.transform = "scale(1)", 60);
-        }
-    });
-
-    function startGame() {
-        clickCount = 0;
-        timeLeft = 10;
-        gameActive = true;
-
-        clickCountDisplay.textContent = "0";
-        clickBtn.textContent = "CLIQUE !";
-        clickBtn.classList.add("playing");
-
-        gameInterval = setInterval(() => {
-            timeLeft--;
-            timerDisplay.textContent = timeLeft + "s";
-
-            if (timeLeft <= 0) endGame();
-        }, 1000);
-    }
-
-    async function endGame() {
-        clearInterval(gameInterval);
-        gameActive = false;
-        clickBtn.classList.remove("playing");
-        clickBtn.textContent = "REJOUER";
-        timerDisplay.textContent = "10s";
-
-        const username = usernameInput.value.trim() || "Anonyme";
-
-        // Envoyer le score à l'API
-        try {
-            const res = await fetch(`${API_URL}/score`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ username, score: clickCount })
-            });
-
-            const data = await res.json();
-            personalBest = data.bestScore;
-            personalBestDisplay.textContent = personalBest;
-
-        } catch (err) {
-            console.error("Erreur enregistrement score :", err);
-        }
-
-        loadLeaderboard();
-    }
-
-    // ------------------------------
-    // LEADERBOARD API
-    // ------------------------------
-    async function loadLeaderboard() {
-        try {
-            const res = await fetch(`${API_URL}/leaderboard`);
-            const scores = await res.json();
-
-            const leaderboardList = document.getElementById("leaderboardList");
-
-            if (scores.length === 0) {
-                leaderboardList.innerHTML = `
-                    <div class="leaderboard-item">
-                        <span class="leaderboard-rank">-</span>
-                        <span class="leaderboard-name">Aucun score</span>
-                        <span class="leaderboard-score">-</span>
-                    </div>
-                `;
-                return;
-            }
-
-            leaderboardList.innerHTML = scores.slice(0, 10).map((entry, index) => `
-                <div class="leaderboard-item ${index === 0 ? "top-1" : ""}">
-                    <span class="leaderboard-rank">
-                        ${index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index+1}
-                    </span>
-                    <span class="leaderboard-name">${entry.username}</span>
-                    <span class="leaderboard-score">${entry.score} clics</span>
+        if (scores.length === 0) {
+            leaderboardList.innerHTML = `
+                <div class="leaderboard-item">
+                    <span class="leaderboard-rank">-</span>
+                    <span class="leaderboard-name">Aucun score</span>
+                    <span class="leaderboard-score">-</span>
                 </div>
-            `).join("");
-
-        } catch (err) {
-            console.error("Erreur leaderboard :", err);
+            `;
+            return;
         }
+
+        leaderboardList.innerHTML = scores.slice(0, 10).map((entry, index) => `
+            <div class="leaderboard-item ${index === 0 ? "top-1" : ""}">
+                <span class="leaderboard-rank">
+                    ${index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index+1}
+                </span>
+                <span class="leaderboard-name">${entry.username}</span>
+                <span class="leaderboard-score">${entry.score} clics</span>
+            </div>
+        `).join("");
+
+    } catch (err) {
+        console.error("Erreur leaderboard :", err);
     }
+}
 
-    // ------------------------------
-    // INITIALISATION
-    // ------------------------------
-    window.addEventListener("load", () => {
-        initViewCounter();
-        loadLeaderboard();
-
-        // Mise à jour auto toutes les 10 sec
-        setInterval(loadLeaderboard, 10000);
-    });
+// ------------------------------
+// INITIALISATION
+// ------------------------------
+window.addEventListener("load", () => {
+    initViewCounter();
+    loadLeaderboard();
+});
 </script>
 
 
