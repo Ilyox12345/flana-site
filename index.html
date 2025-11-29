@@ -771,8 +771,7 @@
         <p>© 2025 Flana - Développeur Discord</p>
         <p style="margin-top: 1rem; opacity: 0.8;">Transformons vos idées en réalité</p>
     </footer>
-
-   <script>
+<script>
     const API_URL = "https://flana-api-off.ilyesquibroute93.workers.dev";
 
     // ------------------------------
@@ -803,23 +802,6 @@
     const timerDisplay = document.getElementById("timer");
     const personalBestDisplay = document.getElementById("personalBest");
     const usernameInput = document.getElementById("username");
-
-    // Charger le meilleur score perso via API
-    async function loadPersonalBest() {
-        const username = usernameInput.value.trim() || "Anonyme";
-        try {
-            const res = await fetch(`${API_URL}/leaderboard`);
-            const data = await res.json();
-
-            const scores = data.filter(p => p.username === username);
-            if (scores.length > 0) {
-                personalBest = Math.max(...scores.map(s => s.score));
-                personalBestDisplay.textContent = personalBest;
-            }
-        } catch {
-            console.log("Impossible de charger le meilleur score");
-        }
-    }
 
     clickBtn.addEventListener("click", () => {
         if (!gameActive) startGame();
@@ -914,36 +896,17 @@
     }
 
     // ------------------------------
-    // NAVIGATION + ANIMATIONS
-    // ------------------------------
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-        a.addEventListener("click", e => {
-            e.preventDefault();
-            const target = document.querySelector(a.getAttribute("href"));
-            if (target) target.scrollIntoView({ behavior: "smooth" });
-        });
-    });
-
-    const observerOptions = {threshold: 0.2, rootMargin: "0px 0px -100px 0px"};
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting)
-                entry.target.style.animation = "fadeInUp 0.8s ease forwards";
-        });
-    });
-
-    document.querySelectorAll(".project-card, .skill-card").forEach(card => observer.observe(card));
-
-    // ------------------------------
     // INITIALISATION
     // ------------------------------
     window.addEventListener("load", () => {
         initViewCounter();
         loadLeaderboard();
 
+        // Mise à jour auto toutes les 10 sec
         setInterval(loadLeaderboard, 10000);
     });
 </script>
+
 
 </body>
 </html>
